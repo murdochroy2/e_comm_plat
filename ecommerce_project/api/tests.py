@@ -3,7 +3,7 @@ from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APIClient
 from decimal import Decimal
-from .models import Product, Order
+from api.models import Product, Order
 
 @pytest.fixture
 def api_client():
