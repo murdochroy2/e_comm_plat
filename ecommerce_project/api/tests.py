@@ -4,6 +4,12 @@ from rest_framework import status
 from rest_framework.test import APIClient
 from decimal import Decimal
 from api.models import Product, Order
+from django.test import TestCase
+from rest_framework.test import APITestCase
+from api.models import OrderItem
+from api.views import ProductListCreateView, ProductDetailView, OrderListCreateView, OrderDetailView
+from rest_framework.test import force_authenticate
+from django.contrib.auth.models import User
 
 @pytest.fixture
 def api_client():
@@ -93,3 +99,60 @@ class TestOrderAPI:
         }
         response = api_client.post(url, order_data, format='json')
         assert response.status_code == status.HTTP_400_BAD_REQUEST 
+
+    def test_create_order_with_sufficient_stock(self, api_client, create_product):
+        url = reverse('order-list')
+        order_data = {
+            'items': [
+                {
+                    'product_id': create_product.id,
+                    'quantity': 1  # Sufficient stock
+                }
+            ]
+        }
+        response = api_client.post(url, order_data, format='json')
+        assert response.status_code == status.HTTP_201_CREATED
+        assert Order.objects.count() == 1
+        
+        # Check stock was updated
+        product = Product.objects.get(id=create_product.id)
+        assert product.stock == 9  # Stock should decrease by 1
+
+    def test_create_order_with_zero_quantity(self, api_client, create_product):
+        url = reverse('order-list')
+        order_data = {
+            'items': [
+                {
+                    'product_id': create_product.id,
+                    'quantity': 0  # Zero quantity
+                }
+            ]
+        }
+        response = api_client.post(url, order_data, format='json')
+        assert response.status_code == status.HTTP_400_BAD_REQUEST  # Expecting a bad request
+
+    def test_create_order_with_negative_quantity(self, api_client, create_product):
+        url = reverse('order-list')
+        order_data = {
+            'items': [
+                {
+                    'product_id': create_product.id,
+                    'quantity': -1  # Negative quantity
+                }
+            ]
+        }
+        response = api_client.post(url, order_data, format='json')
+        assert response.status_code == status.HTTP_400_BAD_REQUEST  # Expecting a bad request
+
+    def test_create_order_with_insufficient_stock(self, api_client, create_product):
+        url = reverse('order-list')
+        order_data = {
+            'items': [
+                {
+                    'product_id': create_product.id,
+                    'quantity': 20  # More than available stock
+                }
+            ]
+        }
+        response = api_client.post(url, order_data, format='json')
+        assert response.status_code == status.HTTP_400_BAD_REQUEST  # Expecting a bad request 
