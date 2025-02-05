@@ -6,7 +6,6 @@ A production-grade RESTful API for a simple e-commerce platform built with Djang
 
 - Product management (CRUD operations)
 - Order placement with stock validation
-- Comprehensive test coverage
 - Docker support
 - PostgreSQL database
 
@@ -20,8 +19,7 @@ A production-grade RESTful API for a simple e-commerce platform built with Djang
 1. Clone the repository: 
 
 ```bash
-git clone https://github.com/yourusername/ecommerce-api.git
-cd ecommerce-api
+cd e_comm_plat
 ```
 
 2. Build and run the Docker container:
@@ -31,7 +29,6 @@ docker compose up --build
 ```
 
 
-The API will be available at `http://localhost:8000/api/`
 
 ## API Endpoints
 
