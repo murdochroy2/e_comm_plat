@@ -15,18 +15,10 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path
-from api.views import (
-    ProductListCreateView,
-    ProductDetailView,
-    OrderListCreateView,
-    OrderDetailView
-)
+from django.urls import path, include
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/products/', ProductListCreateView.as_view(), name='product-list'),
-    path('api/products/<int:pk>/', ProductDetailView.as_view(), name='product-detail'),
-    path('api/orders/', OrderListCreateView.as_view(), name='order-list'),
-    path('api/orders/<int:pk>/', OrderDetailView.as_view(), name='order-detail'),
+    path('api/', include('api.urls')),
+    path('api-auth/', include('rest_framework.urls')),  # Adds login to browsable API
 ]

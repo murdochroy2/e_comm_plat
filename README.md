@@ -27,7 +27,7 @@ cd ecommerce-api
 2. Build and run the Docker container:
 
 ```bash
-docker-compose up --build
+docker compose up --build
 ```
 
 
@@ -54,5 +54,5 @@ The API will be available at `http://localhost:8000/api/`
 Run tests using pytest:
 
 ```bash
-docker-compose run web pytest
+docker compose run web pytest
 ```

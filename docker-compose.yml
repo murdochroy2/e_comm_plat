@@ -2,42 +2,43 @@ version: '3.8'
 
 services:
   web:
-    build: .
-    command: >
-      sh -c "chmod +x /app/wait-for-db.sh &&
-             /app/wait-for-db.sh db &&
-             python manage.py migrate &&
-             python manage.py runserver 0.0.0.0:8000"
-    volumes:
-      - .:/app
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: ecommerce-api:prod
+    command: gunicorn ecommerce_project.wsgi:application --bind 0.0.0.0:8000 --workers 4
     ports:
       - "8000:8000"
-    environment:
-      - DEBUG=1
-      - DJANGO_ALLOWED_HOSTS=localhost,127.0.0.1
-      - POSTGRES_DB=ecommerce
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
-      - DB_HOST=db
-      - DB_PORT=5432
+    env_file:
+      - .env.prod
+      - .env.prod.db
     depends_on:
-      - db
+      db:
+        condition: service_healthy
+    networks:
+      - ecommerce_network
+    deploy:
+      restart_policy:
+        condition: on-failure
+        max_attempts: 3
 
   db:
-    image: postgres:13
+    image: postgres:15-alpine
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    environment:
-      - POSTGRES_DB=ecommerce
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
-    ports:
-      - "5432:5432"
+    env_file:
+      - .env.prod.db
+    networks:
+      - ecommerce_network
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
-      interval: 5s
+      interval: 10s
       timeout: 5s
       retries: 5
 
 volumes:
-  postgres_data: 
+  postgres_data:
+
+networks:
+  ecommerce_network:
+    driver: bridge 
